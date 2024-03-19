@@ -1,0 +1,22 @@
+#+title: Loafer Research
+* Loafer Notes
+** Scope
+Build Socket to Connect To MPV IPC
+IPC should exposed
+- Skip / Forward
+- Add to queue of videos
+HTML frontend
+- To skip / control
+- Add videos to queue and control playback
+** MPV architecture
+*** Embeddable C API
+C API that control over playback (libmpv)
+[[https://github.com/mpv-player/mpv/blob/master/libmpv/client.h]]
+Rust Bindings Option is Available with  [[https://crates.io/crates/libmpv][libmpv-rs]]
+*** C Plugins
+[[https://mpv.io/manual/master/#c-plugins][here]]
+Not really sure how this differs from libmpv, apparently it uses libmpv
+Potential use case for Zig here if C Plugin route is taken
+I can also write rust code to compile to .so file here and be used as a plugin
+*** Lua / JS Scripting API
+I believe these use libmpv as the backend so I could just use that instead
