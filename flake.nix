@@ -21,13 +21,14 @@
           buildInputs = [
             eza
             fd
-	    rust-analyzer
+            ripgrep
+            mpv
+            rust-analyzer
             # install rust with rust_analyzer
             (rust-bin.stable.latest.default.override {
                 extensions = [ "rust-src" ];
             })
           ];
-
           shellHook = ''
             alias ls=eza
             alias find=fd
