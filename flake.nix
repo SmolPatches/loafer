@@ -32,7 +32,6 @@
             export CARGO_HOME=$PWD/.cargo/ #put dependencies inside this project
             alias ls="eza --icons --long"
             alias find=fd
-	    exec zsh
           '';
         };
       }
