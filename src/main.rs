@@ -3,7 +3,13 @@ use std::io::{BufRead, BufReader, Read, Write};
 //use crate::ipc::Payload;
 
 mod ipc;
+mod webserver;
 fn main() {
+
+    println!("{:?}",webserver::api::Status::from(400));
+/* Add this code to examples
+ * for this to work mpv must be listening to input-ipc-server @ loafer.sock
+ * mpv $VIDEO --input-ipc-server=/tmp/loafer.sock
     let mut conn = ipc::Conn::new().expect("Failed to create connection");
     let path = conn.get_path();
     let mut buf: String = String::new();
@@ -26,4 +32,5 @@ fn main() {
         }
     ).expect("Failed to write");
     println!("Read {buf}");
+  */
 }
