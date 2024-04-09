@@ -1,0 +1,31 @@
+#+title: Rust
+* Rust Notes
+Rust is cool but can be complicated here are some resources that I frequently use during rust projects
+** Modules and Names
+[[https://doc.rust-lang.org/reference/visibility-and-privacy.html][Visibility Rust Ref]]
+[[https://doc.rust-lang.org/edition-guide/rust-2018/path-changes.html][Rust 2018 Changes]]
+[[https://stackoverflow.com/questions/26388861/how-can-i-include-a-module-from-another-file-from-the-same-project][How to split files]]
+** Iterator and Ranges
+Ranges can be used to specify ranges of number and iterators can be used to do some processing on them
+For example
+#+BEGIN_SRC rust
+let num = 150;
+let combined_range = (100..199).chain(200..247).chain(300..378);
+// Check if the number is within any of the combined ranges
+match num {
+    n if combined_range.contains(&n) => {
+        // Run the same code for all numbers within any of the combined ranges
+        println!("Number {} is within the combined range.", num);
+    }
+    _ => {
+        // Handle other cases if needed
+        println!("Number {} is not within the combined range.", num);
+    }
+}
+#+END_SRC
+Cool!
+** Struct Variants
+https://rust-lang.github.io/rfcs/0418-struct-variants.html
+** Custom Error Types
+** Enums as State
+https://corrode.dev/blog/enums/

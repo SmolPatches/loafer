@@ -1,5 +1,15 @@
 #+title: Loafer Research
 * Loafer Notes
+**TODO
+- Lexical Analyzer for HTTP Parsing(Rest Server)
+- Refactor Crate to have:
+  - Separate Binaries
+  - A library
+  - Example binaries of how to use the library
+- Finish Type State Validation
+  - Request::Get struct variant
+  - Request::Post
+  - Rest of HTTP Options
 ** Scope
 Build Socket to Connect To MPV IPC
 IPC should exposed
@@ -20,3 +30,13 @@ Potential use case for Zig here if C Plugin route is taken
 I can also write rust code to compile to .so file here and be used as a plugin
 *** Lua / JS Scripting API
 I believe these use libmpv as the backend so I could just use that instead
+* HTTP Server
+Loafer needs an rest server and a frontend/ui to trigger ipc events.
+Simplest approach is a website hosted on an http server with an API endpoint(currently also http)
+*** HTTP Parsing
+The **REST** server needs to parse HTTP data to make sure this is valid
+The approach I am taking is using a buffer reader to read lines
+But this made me realize the actual lines need to be parsed, raising concerns
+- regex is hacky and shameful
+- string functions is morally wrong
+So is the only solution lexical analysis?
