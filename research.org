@@ -10,6 +10,7 @@
   - Request::Get struct variant
   - Request::Post
   - Rest of HTTP Options
+- Look @ good http parsers in go / other languages and see how they do it(get inspired)
 ** Scope
 Build Socket to Connect To MPV IPC
 IPC should exposed
@@ -40,3 +41,48 @@ But this made me realize the actual lines need to be parsed, raising concerns
 - regex is hacky and shameful
 - string functions is morally wrong
 So is the only solution lexical analysis?
+2 Solutions are Lexical Analysis and State Machines
+Look @ some http crates to see how they do it
+- Nom, [[https://docs.rs/nom/latest/nom/#]]
+Chatgpt Notes
+#+BEGIN_VERSE
+States:
+1. Method State
+2. URI State
+3. Version State
+4. End State (Complete parsing)
+
+Transitions:
+- Initial State: Method State
+- Method State:
+  - Transition to URI State upon encountering a whitespace character
+- URI State:
+  - Transition to Version State upon encountering a whitespace character
+- Version State:
+  - Transition to End State upon encountering '\r\n' (end of line)
+- End State: Parsing complete
+
+Actions:
+- Accumulate characters for method, URI, and version fields
+- Validate and process the parsed HTTP request line
+State Machine
+            +--------+     whitespace      +--------+
+            | Method |-------------------> |   URI  |
+            +--------+                     +--------+
+                ^                              |
+                |                              |
+                |     whitespace               |
+                +------------------------------+
+                |
+                v
+            +--------+
+            | Version|
+            +--------+
+                |
+                |
+                v
+            +--------+
+            |  End   |
+            +--------+
+
+#+END_VERSE
