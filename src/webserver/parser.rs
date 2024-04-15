@@ -1,3 +1,5 @@
+use std::ascii;
+use std::collections::HashMap;
 use std::io::{Error,ErrorKind};
 use std::io::{BufRead, BufReader};
 // parser doesnt aim to be complete
@@ -30,6 +32,7 @@ struct Header{
     version: String,
     headers: Vec<Headers>,
 }
+struct RawBody(String);
 /// Given any readable datatypes, read them and get their method, location and additional headers
 pub fn parse_header<T: AsRef<[u8]>>(data:T) -> std::io::Result<Header>{
     let mut reader = BufReader::new(data.as_ref());
@@ -75,6 +78,57 @@ pub fn parse_header<T: AsRef<[u8]>>(data:T) -> std::io::Result<Header>{
     }
     Err(Error::from(ErrorKind::InvalidData))
 }
+pub fn parse_body<T: AsRef<[u8]>>(data:T) -> std::io::Result<String>{
+    let reader = BufReader::new(data.as_ref());
+    let mut found_body = false;
+    let mut lines = reader.lines().skip_while(|line|->bool {
+        // fix this code
+        if line.as_ref().unwrap().is_empty() && !found_body {  // once we find an empty line we got to the body
+            false
+        } else { true }
+    });
+    lines.next(); // consume empty line
+    let body = lines.next().expect("Failed to read body")?;
+    // do body parsing with url
+    Ok(body)
+}
+#[derive(Debug)]
+enum Body {
+    Seek(isize),
+    SetFullscreen(bool),
+    SetPause(bool),
+    GetFullscreen,
+    GetPause,
+}
+fn convert_body(s:&str) -> std::io::Result<Body> {
+        let mut matcher = s.split("=");
+        match (matcher.next(),matcher.next()) {
+            (Some("fullscreen"),Some(x)) => {
+                let parse:bool = x.parse::<bool>().expect("Couldnt parse seek");
+                Ok(Body::SetFullscreen(parse))
+            }
+            (Some("pause"),Some(x)) => {
+                let parse:bool = x.parse::<bool>().expect("Couldnt parse seek");
+                Ok(Body::SetPause(parse))
+            },
+            (Some("seek"),Some(x)) => {
+                let parse:isize = x.parse::<isize>().expect("Couldnt parse seek");
+                Ok(Body::Seek(parse))
+            },
+            (Some("get"),Some(x)) => {
+                match x{
+                    "fullscreen" => Ok(Body::GetFullscreen),
+                    "pause" => Ok(Body::GetPause),
+                    _=> Err(Error::from(ErrorKind::InvalidData))
+                }
+            },
+            (Some("set"),Some(x)) => {
+                todo!();
+            },
+            (_, _) => todo!()
+        }
+
+}
 #[cfg(test)]
 pub mod tests {
     use super::*;
@@ -90,5 +144,25 @@ command=skip&time=30
         let get_req =  "GET /api HTTP/1.1\r";
         assert!(parse_header(get_req).is_err());
         assert_eq!(parse_header(get_req).err().unwrap().kind(),ErrorKind::InvalidData);
+    }
+    #[test]
+    fn test_parse_body() {
+       let form_req =  "POST /api HTTP/1.1\r
+Content-Type: application/x-www-form-urlencoded\r
+\r
+command=skip&time=30
+";
+        assert!(parse_body(form_req).is_ok());
+    }
+    #[test]
+    fn test_parse_request(){
+       let form_req =  "POST /api HTTP/1.1\r
+Content-Type: application/x-www-form-urlencoded\r
+\r
+seek=30
+";
+        let headers = parse_header(form_req).unwrap();
+        let data = convert_body(&parse_body(form_req).unwrap()).unwrap();
+        println!("Conversion yieled {:?}",data);
     }
 }
