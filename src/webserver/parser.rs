@@ -5,6 +5,7 @@ use std::io::{BufRead, BufReader};
 // parser doesnt aim to be complete
 // just enough so it can read data from browser requests
 // and reply
+
 #[derive(Debug)]
 enum Method {
     POST,
@@ -101,33 +102,39 @@ enum Body {
     GetPause,
 }
 fn convert_body(s:&str) -> std::io::Result<Body> {
-        let mut matcher = s.split("=");
-        match (matcher.next(),matcher.next()) {
-            (Some("fullscreen"),Some(x)) => {
-                let parse:bool = x.parse::<bool>().expect("Couldnt parse seek");
-                Ok(Body::SetFullscreen(parse))
+    let TheError:Error = Error::from(ErrorKind::InvalidData);
+    println!("Conv Body1: {}",s);
+    let mut matcher = s.split("&");
+    // command=get&param=fullscreen
+    // command=get&param=pause
+    // command=fullscreen&param=1
+    // command=pause&param=1
+    // command=seek&param=30
+    let cmd = matcher.next().unwrap().split("=").nth(1).unwrap(); // do error checking
+    let param = matcher.next().unwrap().split("=").nth(1).unwrap(); // do error checking
+    println!("Conv Body: {}\t{:?}",cmd,param);
+    match (cmd,param)  {
+        ("fullscreen",x) => {
+            let parse: bool = x.parse().unwrap();
+            Ok(Body::SetFullscreen(parse))
+        },
+        ("pause",x) => {
+            let parse: bool = x.parse().unwrap();
+            Ok(Body::SetPause(parse))
+        },
+        ("seek",x) => {
+            let parse: isize = x.parse().unwrap();
+            Ok(Body::Seek(parse))
+        },
+        ("get",x) => {
+            match x {
+               "fullscreen" => Ok(Body::GetFullscreen),
+               "pause" => Ok(Body::GetPause),
+                _ => Err(TheError),
             }
-            (Some("pause"),Some(x)) => {
-                let parse:bool = x.parse::<bool>().expect("Couldnt parse seek");
-                Ok(Body::SetPause(parse))
-            },
-            (Some("seek"),Some(x)) => {
-                let parse:isize = x.parse::<isize>().expect("Couldnt parse seek");
-                Ok(Body::Seek(parse))
-            },
-            (Some("get"),Some(x)) => {
-                match x{
-                    "fullscreen" => Ok(Body::GetFullscreen),
-                    "pause" => Ok(Body::GetPause),
-                    _=> Err(Error::from(ErrorKind::InvalidData))
-                }
-            },
-            (Some("set"),Some(x)) => {
-                todo!();
-            },
-            (_, _) => todo!()
-        }
-
+        },
+        _=> Err(TheError),
+    }
 }
 #[cfg(test)]
 pub mod tests {
@@ -159,9 +166,16 @@ command=skip&time=30
        let form_req =  "POST /api HTTP/1.1\r
 Content-Type: application/x-www-form-urlencoded\r
 \r
-seek=30
+command=seek&param=30
 ";
         let headers = parse_header(form_req).unwrap();
+        let mut parse_as_url:bool = false;
+        // add parsing to check if it is a url header
+        //for header in headers.headers.into_iter() {
+        //    if header == ContentTypes::URLENCODED {
+        //        parse_as_url = true;
+        //    }
+        //}
         let data = convert_body(&parse_body(form_req).unwrap()).unwrap();
         println!("Conversion yieled {:?}",data);
     }
