@@ -84,25 +84,31 @@ pub fn parse_body<T: AsRef<[u8]>>(data:T) -> std::io::Result<String>{
     let mut found_body = false;
     let mut lines = reader.lines().skip_while(|line|->bool {
         // fix this code
-        if line.as_ref().unwrap().is_empty() && !found_body {  // once we find an empty line we got to the body
-            false
-        } else { true }
+        if line.as_ref().expect("HUH?").trim().is_empty() && !found_body{  // once we find an empty line we got to the body
+            return false;
+        } else { found_body=true; return true; }
     });
     lines.next(); // consume empty line
     let body = lines.next().expect("Failed to read body")?;
     // do body parsing with url
     Ok(body)
 }
+pub fn parse_body_str(data:&str) -> std::io::Result<String>{
+    let s = data.split_ascii_whitespace().skip_while(|l| !l.is_empty());
+    Ok(s.collect())
+}
 #[derive(Debug)]
-enum Body {
+pub enum Body {
     Seek(isize),
     SetFullscreen(bool),
     SetPause(bool),
     GetFullscreen,
     GetPause,
 }
-fn convert_body(s:&str) -> std::io::Result<Body> {
+pub fn convert_body(s:&str) -> std::io::Result<Body> {
     let TheError:Error = Error::from(ErrorKind::InvalidData);
+
+    let s:String = s.split_ascii_whitespace().skip_while(|l| !l.contains("cmd=")).collect();
     println!("Conv Body1: {}",s);
     let mut matcher = s.split("&");
     // command=get&param=fullscreen

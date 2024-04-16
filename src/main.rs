@@ -1,12 +1,65 @@
-use std::io::{BufRead, BufReader, Read, Write};
-
-//use crate::ipc::Payload;
-
+// ref: https://doc.rust-lang.org/book/ch20-01-single-threaded.html
+use std::{io::{BufRead, BufReader, Read, Write}, net::{TcpListener, TcpStream}, time::Duration};
 mod ipc;
 mod webserver;
-fn main() {
+pub fn start_server() {
+    let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
+    for stream in listener.incoming() {
+        let stream = stream.unwrap();
+        println!("Answering stream!!!");
+        handle_conn(stream);
+    }
+}
 
-    println!("{:?}",webserver::api::Status::from(400));
+fn handle_conn(mut stream: TcpStream) {
+    let mut conn = ipc::api::Conn::new().expect("Failed to create connection");
+    let path = conn.get_path();
+    // http stuff
+    //let mut br = BufReader::new(&stream);
+    let mut buf = String::new();
+    let mut vbuf: Vec<u8> = Vec::new();
+    println!("Still reading");
+    stream.set_read_timeout(Some(Duration::from_millis(500)));
+    stream.read_to_string(&mut buf);
+    //let mut req = String::new();
+    //while let Ok(x) = br.read_line(&mut buf) {
+    //    if x > 0 {
+    //        println!("read {}",&buf);
+    //        req.push_str(&buf)
+    //    }
+    //}
+    //let data = String::from_utf8(vbuf).unwrap();
+    println!("DONE reading, \n{}",&buf);
+    let msg = webserver::parser::convert_body(&buf);
+    let response = "HTTP/1.1 200 OK\r\n\r\n";
+    stream.write_all(response.as_bytes()).unwrap();
+    // send it to ipc
+    match msg.unwrap() {
+        webserver::parser::Body::Seek(x) => {
+            println!("Got seek");
+            let load =ipc::api::Payload::seek_command(x,0).val;
+            conn.get_handle().write(load.as_bytes());
+        },
+        //webserver::parser::Body::SetFullscreen(x) => {
+        //    println!("Got fs");
+        //    let load =ipc::api::Payload::set_fullscreen(true,0);
+        //    conn.get_handle().write(load.as_bytes());
+        //},
+        //webserver::parser::Body::SetPause(x) => {
+        //    println!("Got fs");
+        //    let load =ipc::api::Payload::set_fullscreen(true,0);
+        //    conn.get_handle().write(load.as_bytes());
+        //},
+        _=> todo!()
+        //Body::SetFullscreen(x),
+        //Body::SetPause(x),
+        //Body::GetFullscreen,
+        //Body::GetPause,
+    };
+}
+fn main() {
+    start_server();
+
 /* Add this code to examples
  * for this to work mpv must be listening to input-ipc-server @ loafer.sock
  * mpv $VIDEO --input-ipc-server=/tmp/loafer.sock
