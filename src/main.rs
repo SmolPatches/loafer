@@ -21,14 +21,6 @@ fn handle_conn(mut stream: TcpStream) {
     println!("Still reading");
     stream.set_read_timeout(Some(Duration::from_millis(500)));
     stream.read_to_string(&mut buf);
-    //let mut req = String::new();
-    //while let Ok(x) = br.read_line(&mut buf) {
-    //    if x > 0 {
-    //        println!("read {}",&buf);
-    //        req.push_str(&buf)
-    //    }
-    //}
-    //let data = String::from_utf8(vbuf).unwrap();
     println!("DONE reading, \n{}",&buf);
     let msg = webserver::parser::convert_body(&buf);
     let response = "HTTP/1.1 200 OK\r\n\r\n";
@@ -40,16 +32,16 @@ fn handle_conn(mut stream: TcpStream) {
             let load =ipc::api::Payload::seek_command(x,0).val;
             conn.get_handle().write(load.as_bytes());
         },
-        //webserver::parser::Body::SetFullscreen(x) => {
-        //    println!("Got fs");
-        //    let load =ipc::api::Payload::set_fullscreen(true,0);
-        //    conn.get_handle().write(load.as_bytes());
-        //},
-        //webserver::parser::Body::SetPause(x) => {
-        //    println!("Got fs");
-        //    let load =ipc::api::Payload::set_fullscreen(true,0);
-        //    conn.get_handle().write(load.as_bytes());
-        //},
+        webserver::parser::Body::SetFullscreen(x) => {
+            println!("Got fs");
+            let load =ipc::api::Payload::set_fullscreen(x,0).val;
+            conn.get_handle().write(load.as_bytes());
+        },
+        webserver::parser::Body::SetPause(x) => {
+            println!("Got fs");
+            let load =ipc::api::Payload::set_pause(x,0).val;
+            conn.get_handle().write(load.as_bytes());
+        },
         _=> todo!()
         //Body::SetFullscreen(x),
         //Body::SetPause(x),

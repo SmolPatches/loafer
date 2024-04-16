@@ -18,14 +18,14 @@
       <label for="cmd"> Command</label>
       <input type="text" name="cmd" value="fullscreen"></input>
       <label for="param">Param</label>
-      <input type="text" name="param" value="1"></input>
+      <input type="text" name="param" value="false"></input>
       <button type="button" onclick="sendData(1)">Send Data</button>
     </form>
     <form action="http://127.0.0.1:8080/api" id="pause" method="POST">
       <label for="cmd"> Command</label>
       <input type="text" name="cmd" value="pause"></input>
       <label for="param">Param</label>
-      <input type="text" name="param" value="1"></input>
+      <input type="text" name="param" value="false"></input>
       <button type="button" onclick="sendData(2)">Send Data</button>
     </form>
 
@@ -44,6 +44,12 @@ xhr.onreadystatechange = function() {
     }
 };
     xhr.send(formData+"\r\n");
+    // toggle bools after send
+    if (id == 1 || id == 2) {
+	var v = !(String(form.elements["param"].value).toLowerCase() === 'true');
+	form.elements["param"].value = v;
+    }
+    // toggle fullscreen
 }
 
     </script>
