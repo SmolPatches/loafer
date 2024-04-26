@@ -1,7 +1,9 @@
 #+title: Loafer Research
 * Loafer Notes
 **TODO
-- Lexical Analyzer for HTTP Parsing(Rest Server)
+- Make binary play files in linear order while checking the last watched
+- Add back button (makes the seek value negative)
+- Add skip button to go to end of the video
 - Refactor Crate to have:
   - Separate Binaries
   - A library
@@ -86,3 +88,29 @@ State Machine
             +--------+
 
 #+END_VERSE
+** Current Design
+The current design tries to take advantage of some of these features.
+It does a terrible job at it, and in the end is a glorified string checker.
+The code isn't made to be touched by anyone including myself.
+Currently the steps to run this program are:
+1. Get the ip address from `iproute2`
+2. use this ip to render the html template( sending forms to proper address )
+3. start http api server
+4. host the rendered template
+5. Start mpv with
+   ```bash
+   #+BEGIN_SRC bash
+   mpv episode.mkv --input-ipc-server=/tmp/loafer.sock
+   #+END_SRC
+** How to improvise
+*** Fix Module Paths and Cargo Setup
+Make a lib with some of the code then a binary to handle the startup
+*** Combine the two http servers
+Currently as described there are 2 HTTP Servers needed
+- One for Hosting the UI(form to communicate to Control Center(tool that sends messages to mpv))
+- One for parsing the ui and sending the data to msg mpv
+The code for the 1st parser is currently being hosted by python3 -m http.server -b 0.0.0.0 8080.
+Combine this python process into the rust main code(either by launching with process::Command or by real http server rust)
+*** MPV ipc connections
+MPV ipc connections are started manually.
+with the command referenced above. Find a way to start mpv with the ipc server always or some other fancy smacy thing
