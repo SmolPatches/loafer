@@ -1,9 +1,16 @@
 // ref: https://doc.rust-lang.org/book/ch20-01-single-threaded.html
-use std::{io::{BufRead, BufReader, Read, Write}, net::{TcpListener, TcpStream}, time::Duration};
+use askama::Template;
+#[derive(Template)]
+#[template(path="index.html")]
+struct IndexTmpl<'a>{// html code that will have server addr
+    addr:&'a str,
+}
+use std::{fs::OpenOptions, io::{BufRead, BufReader, Read, Write}, net::{TcpListener, TcpStream}, os::unix::process, process::{exit, Command}, time::Duration};
 mod ipc;
 mod webserver;
-pub fn start_server() {
-    let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
+pub fn start_server(addr:&str) {
+    println!("SServer\tAddr:{}",addr);
+    let listener = TcpListener::bind(addr).unwrap();
     for stream in listener.incoming() {
         let stream = stream.unwrap();
         println!("Answering stream!!!");
@@ -50,8 +57,27 @@ fn handle_conn(mut stream: TcpStream) {
     };
 }
 fn main() {
-    start_server();
-
+    // get ip address then use it to build html template
+    if cfg!(target_os="windows") {
+        panic!("Using trash os")
+    };
+    let get_ip = || -> String {
+        let args = "route show proto dhcp".split_ascii_whitespace().into_iter();
+        let lines = String::from_utf8(Command::new("ip").args(args).output().unwrap().stdout).unwrap();
+        let ip_resp = lines.lines().next().unwrap().split_whitespace().nth(6).unwrap();
+        String::from(ip_resp)
+    };
+    let webserver_ip = get_ip();
+    let addr = format!("{}:8080",webserver_ip);
+    let idx_render = IndexTmpl { addr:&addr };
+    println!("Server Address: {}",webserver_ip);
+    // do html templating
+    let render_hmtl = idx_render.render().expect("Couldn't render");
+    let mut f = OpenOptions::new().write(true).create(true).open("renders/index.html").expect("Coulnd't create file to write render to");
+    f.write_all(render_hmtl.as_bytes()).expect("Failed to write bytes");
+    println!("Server starting");
+    start_server(&addr);
+}
 /* Add this code to examples
  * for this to work mpv must be listening to input-ipc-server @ loafer.sock
  * mpv $VIDEO --input-ipc-server=/tmp/loafer.sock
@@ -78,4 +104,3 @@ fn main() {
     ).expect("Failed to write");
     println!("Read {buf}");
   */
-}

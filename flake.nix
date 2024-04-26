@@ -22,6 +22,7 @@
             eza
             fd
             ripgrep
+            python3
             rust-analyzer
             # install rust with rust_analyzer
             (rust-bin.stable.latest.default.override {
