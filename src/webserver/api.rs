@@ -18,7 +18,7 @@ fn handle_conn(mut stream: TcpStream) {
     let mut buf = String::new();
     println!("Still reading");
     stream.set_read_timeout(Some(Duration::from_millis(500)));
-    stream.read_to_string(&mut buf).expect("Couldnt read http data to string");
+    stream.read_to_string(&mut buf);
     println!("DONE reading, \n{}",&buf);
     let msg = webserver::parser::convert_body(&buf);
     let response = "HTTP/1.1 200 OK\r\n\r\n";
