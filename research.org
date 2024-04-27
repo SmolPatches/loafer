@@ -1,18 +1,32 @@
 #+title: Loafer Research
+* How to Use
+** King Binary
+This binary will get your ip and start an http server which is used to forward requests to mpv to control the socket
+- run binary
+- open mpv
+- host index.html that it makes
+- connect to index hosted and send commands
+
 * Loafer Notes
-**TODO
-- Make binary play files in linear order while checking the last watched
-- Add back button (makes the seek value negative)
-- Add skip button to go to end of the video
+
+** TODO
 - Refactor Crate to have:
-  - Separate Binaries
-  - A library
   - Example binaries of how to use the library
 - Finish Type State Validation
   - Request::Get struct variant
   - Request::Post
   - Rest of HTTP Options
 - Look @ good http parsers in go / other languages and see how they do it(get inspired)
+*** King
+**** TODO
+- Use Rust to Host HTTP server( maybe axum )
+- Or install renders in the .config/loaf-king directory
+- Use a logger in rust
+- Use ~/.config/loaf-king for configs( Port, Log Mode, Database, SSL?)
+- Database for last watched anime in given directories to resume from
+- Make binary play files in linear order while checking the last watched
+- Add back button (makes the seek value negative)
+- Add skip button to go to end of the video
 ** Scope
 Build Socket to Connect To MPV IPC
 IPC should exposed
@@ -103,14 +117,9 @@ Currently the steps to run this program are:
    mpv episode.mkv --input-ipc-server=/tmp/loafer.sock
    #+END_SRC
 ** How to improvise
-*** Fix Module Paths and Cargo Setup
-Make a lib with some of the code then a binary to handle the startup
 *** Combine the two http servers
 Currently as described there are 2 HTTP Servers needed
 - One for Hosting the UI(form to communicate to Control Center(tool that sends messages to mpv))
 - One for parsing the ui and sending the data to msg mpv
 The code for the 1st parser is currently being hosted by python3 -m http.server -b 0.0.0.0 8080.
 Combine this python process into the rust main code(either by launching with process::Command or by real http server rust)
-*** MPV ipc connections
-MPV ipc connections are started manually.
-with the command referenced above. Find a way to start mpv with the ipc server always or some other fancy smacy thing
