@@ -15,3 +15,4 @@ src = "src/bin/king/main.rs"
 [dependencies]
 serde_json = "1.0.114"
 askama = "0.12.1"
+clap = { version = "4.5.4", features = ["derive"] }
