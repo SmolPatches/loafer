@@ -26,6 +26,10 @@ fn play_list(p:&Path) {
             entry.unwrap().path()
         )//)
         .collect();
+    if videos.is_empty() {
+        println!("No videos in directory to play");
+        return;
+    }
     // get last watched_video
     // either from watched.txt or front of vec of videos
     let last_watched:PathBuf= match fs::read_to_string(p.join("watched.txt")) {
