@@ -1,4 +1,5 @@
 // ref: https://doc.rust-lang.org/book/ch20-01-single-threaded.html
+mod cli;
 use askama::Template;
 use std::{collections::VecDeque, fs::{self, read_dir, OpenOptions, ReadDir}, io::Write, mem, os::unix::ffi::OsStrExt, path::{self, Path, PathBuf}, process::{exit, Command}};
 use loafer_lib::webserver::api::start_server;
@@ -18,7 +19,8 @@ fn play_list(p:&Path) {
         .unwrap()
         .into_iter()
         // get list of accepted video types to play
-        .filter(|entry_opt| entry_opt.as_ref().is_ok_and(|entry| accepted_types.contains(&entry.path().extension().unwrap().to_str().unwrap())))
+        .filter(|entry_opt| entry_opt.as_ref().is_ok_and(|entry| entry.path().extension().is_some() == true)) // get rid of all files without a filetype
+        .filter(|entry_opt| entry_opt.as_ref().is_ok_and(|entry| accepted_types.contains(&entry.path().extension().expect("found file without an extension").to_str().expect("couldn convert path to string"))))
         // return get rid of result types
         .map(|entry|
             entry.unwrap().path()
@@ -95,6 +97,7 @@ fn host() {
     start_server(&addr);
 }
 fn main() {
+    cli::setup();
  // use clap to do command line parsing
  // call host or play_list(p)
 }
