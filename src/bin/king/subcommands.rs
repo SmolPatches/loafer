@@ -5,7 +5,7 @@ struct IndexTmpl<'a>{// html code that will have server addr
     addr:&'a str,
 }
 use loafer_lib::webserver::api::start_server;
-use std::{collections::VecDeque, fs::{self, read_dir, OpenOptions, ReadDir}, io::Write, mem, os::unix::ffi::OsStrExt, path::{self, Path, PathBuf}, process::{exit, Command}};
+use std::{collections::VecDeque, fmt::Display, fs::{self, read_dir, OpenOptions, ReadDir}, io::Write, iter::SkipWhile, mem, os::unix::ffi::OsStrExt, path::{self, Path, PathBuf}, process::{exit, Command}};
 // run this code if user runs "king host"
 // renders/index.html gets appended to path
 pub fn host(p:&Path) {
@@ -45,7 +45,7 @@ pub fn host(p:&Path) {
 pub fn play_list(p:&Path) {
     let accepted_types = ["mkv","mp4"];
     // list of videos as path(might need path again)
-    let mut videos:VecDeque<_>= read_dir(p)
+    let mut videos:Vec<PathBuf>= read_dir(p)
         .unwrap()
         .into_iter()
         // get list of accepted video types to play
@@ -54,38 +54,37 @@ pub fn play_list(p:&Path) {
         // return get rid of result types
         .map(|entry|
             entry.unwrap().path()
-        )//)
+        )
         .collect();
+    // sort videos
+    videos.sort();
     if videos.is_empty() {
         println!("No videos in directory to play");
         return;
     }
     // get last watched_video
     // either from watched.txt or front of vec of videos
-    let last_watched:PathBuf= match fs::read_to_string(p.join("watched.txt")) {
-        Ok(video) => {
-            // trim new line because data comes from file
-            Path::new(p).join(video.trim())
-        },
-        _ => {
-            //String::from(videos.pop_front().unwrap().file_name().unwrap().to_str().unwrap())
-            videos.pop_front().unwrap()
-        }
-    };
-    // jump iterator to the last video watched
-    let mut videos = videos.iter().skip_while(|video| {
-        !video.as_path().file_name().unwrap().to_str().unwrap().contains(&last_watched.file_name().unwrap().to_str().unwrap())
-    });
-    // make it peekable
-
-    videos.clone().by_ref().for_each(|f| println!("Remaining Videos:{:?}",f));
-    videos.next(); // this was the last watched video
+    // last watched video is either read from watched.txt or just play the first video
+    if let Ok(video) = fs::read_to_string(p.join("watched.txt")) {
+         //let last_watched:PathBuf= match fs::read_to_string(p.join("watched.txt")) {
+        // trim new line because data comes from file
+        println!("Read from watched.txt");
+        let last_watched = Path::new(p).join(video.trim());
+        // jump iterator to the last video watched
+        let mut v = videos.into_iter().skip_while(|video| {
+            !video.as_path().to_str().unwrap().trim().contains(&last_watched.file_name().unwrap().to_str().unwrap())
+            // !video.as_path().file_name().unwrap().to_str().unwrap().contains(&last_watched.file_name().unwrap().to_str().unwrap())
+        });
+        v.next(); // get next video(unwatched)
+        videos = v.collect(); // now this only contains unwatched videos
+    }
+    videos.iter().for_each(|f| println!("Remaining Videos:{:?}",f));
     // for all videos > last watched
     // watch it
     // update watched.txt
-    videos.for_each(|video|{
-        Command::new("mpv").arg(video).output().expect("couldn't start video");
-        println!("finished:{:?}\t incrementing last_watched",video);
+    videos.into_iter().for_each(|video|{
+        Command::new("mpv").arg(&video).output().expect("couldn't start video");
+        println!("finished:{:?}\t incrementing last_watched",&video);
         OpenOptions::new()
             .write(true)
             .create(true)
