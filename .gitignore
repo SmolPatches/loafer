@@ -1,4 +1,4 @@
 /target
 .direnv/
-.cargo/{bin}
+.cargo/
 renders/*

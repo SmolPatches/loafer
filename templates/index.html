@@ -29,7 +29,8 @@
       <input type="text" name="param" value="false"></input>
       <button type="button" onclick="sendData(2)">Send Data</button>
     </form>
-
+    <button type="button" onclick="cycle(0)">Cycle Audio</button>
+    <button type="button" onclick="cycle(1)">Cycle Sub</button>
     <script>
         
 function sendData(id) {
@@ -52,6 +53,27 @@ xhr.onreadystatechange = function() {
     }
     // toggle fullscreen
 }
+function cycle(num) {
+          var msg;
+          if ( num == 0 ) {
+              // send cycle=audio
+              msg = "cycle=audio"
+          } else {
+              msg = "cycle=sub"
+              // send cycle=subs
+          }
+          console.log("sent:"+msg)
+          var xhr = new XMLHttpRequest();
+          var form = document.getElementById("form1"); // necessary to send to right url
+          xhr.open('POST', form.action, true);
+          xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+          xhr.onreadystatechange = function() {
+              if (xhr.readyState == XMLHttpRequest.DONE) {
+                  xhr.abort(); // This aborts the request and can lead to the closure of the underlying connection
+              }
+          };
+          xhr.send(msg+"\r\n");
+      }
 
     </script>
 </body>

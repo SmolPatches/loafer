@@ -27,6 +27,7 @@ This binary will get your ip and start an http server which is used to forward r
 - Make binary play files in linear order while checking the last watched
 - Add back button (makes the seek value negative)
 - Add skip button to go to end of the video
+- DualSense support
 ** Scope
 Build Socket to Connect To MPV IPC
 IPC should exposed

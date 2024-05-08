@@ -1,5 +1,5 @@
 use std::{ time::Duration, net::{TcpListener,TcpStream}, io::{BufRead, BufReader, Read, Write} };
-use crate::{ipc,webserver};
+use crate::{ipc,webserver::{self, parser::Cycles}};
 pub fn start_server(addr:&str) {
     println!("SServer\tAddr:{}",addr);
     let listener = TcpListener::bind(addr).unwrap();
@@ -38,6 +38,14 @@ fn handle_conn(mut stream: TcpStream) {
         webserver::parser::Body::SetPause(x) => {
             println!("Got fs");
             let load =ipc::api::Payload::set_pause(x,0).val;
+            conn.get_handle().write(load.as_bytes());
+        },
+        webserver::parser::Body::Cycle(cycle_type) => {
+            println!("Got audio_cycle");
+            let load = match cycle_type {
+                Cycles::Audio => ipc::api::Payload::cycle_audio(0),
+                Cycles::Subs => ipc::api::Payload::cycle_subtitles(0)
+            }.val;
             conn.get_handle().write(load.as_bytes());
         },
         _=> todo!()

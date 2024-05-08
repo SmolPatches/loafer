@@ -76,6 +76,32 @@ impl Payload {
         v
         }}
     }
+    pub fn cycle_audio(request_id:usize) -> Payload{
+        Payload{ val:{
+        let mut v=json!({
+            "command": [
+                "cycle",
+                "audio"
+            ],
+            "request_id":request_id
+        }).to_string();
+        v.push_str("\n"); // Tells ipc that this is the end of the msg
+        v
+        }}
+    }
+    pub fn cycle_subtitles(request_id:usize) -> Payload{
+        Payload{ val:{
+        let mut v=json!({
+            "command": [
+                "cycle",
+                "sub"
+            ],
+            "request_id":request_id
+        }).to_string();
+        v.push_str("\n"); // Tells ipc that this is the end of the msg
+        v
+        }}
+    }
 }
 impl fmt::Display for Payload { // display formatter
       fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -113,6 +139,11 @@ impl<'a> Conn<'a> {
         Box::new(&self.sock_handle)
     }
 }
+// TODO
+// add cycle sub and cycle audio
+// Ex
+// { "command": ["cycle", "sub"] }
+// { "command": ["cycle", "audio"] }
 // forward skip
 //{ "command": ["seek", "30"] }
 //Result: {"data":null,"request_id":0,"error":"success"}

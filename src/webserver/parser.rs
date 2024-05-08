@@ -98,16 +98,29 @@ pub fn parse_body_str(data:&str) -> std::io::Result<String>{
     Ok(s.collect())
 }
 #[derive(Debug)]
+pub enum Cycles {
+    Audio,
+    Subs
+}
+#[derive(Debug)]
 pub enum Body {
     Seek(isize),
     SetFullscreen(bool),
     SetPause(bool),
     GetFullscreen,
     GetPause,
+    Cycle(Cycles)
 }
 pub fn convert_body(s:&str) -> std::io::Result<Body> {
     let TheError:Error = Error::from(ErrorKind::InvalidData);
-
+    println!("s is:{s}");
+    if s.contains("cycle=audio") {
+        println!("Got set cycle to audio");
+        return Ok(Body::Cycle(Cycles::Audio));
+    } else if s.contains("cycle=sub") {
+        println!("Got set cycle to sub");
+        return Ok(Body::Cycle(Cycles::Subs));
+    }
     let s:String = s.split_ascii_whitespace().skip_while(|l| !l.contains("cmd=")).collect();
     println!("Conv Body1: {}",s);
     let mut matcher = s.split("&");
