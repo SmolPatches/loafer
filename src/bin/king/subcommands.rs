@@ -66,8 +66,6 @@ pub fn play_list(p:&Path) {
     // either from watched.txt or front of vec of videos
     // last watched video is either read from watched.txt or just play the first video
     if let Ok(video) = fs::read_to_string(p.join("watched.txt")) {
-         //let last_watched:PathBuf= match fs::read_to_string(p.join("watched.txt")) {
-        // trim new line because data comes from file
         println!("Read from watched.txt");
         let last_watched = Path::new(p).join(video.trim());
         // jump iterator to the last video watched
