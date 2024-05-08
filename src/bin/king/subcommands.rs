@@ -5,7 +5,7 @@ struct IndexTmpl<'a>{// html code that will have server addr
     addr:&'a str,
 }
 use loafer_lib::webserver::api::start_server;
-use std::{collections::VecDeque, fmt::Display, fs::{self, read_dir, OpenOptions, ReadDir}, io::Write, iter::SkipWhile, mem, os::unix::ffi::OsStrExt, path::{self, Path, PathBuf}, process::{exit, Command}};
+use std::{fmt::Display, fs::{self, read_dir, OpenOptions, ReadDir}, io::Write, iter::SkipWhile, mem, path::{self, Path, PathBuf}, process::{Command}};
 // run this code if user runs "king host"
 // renders/index.html gets appended to path
 pub fn host(p:&Path) {
